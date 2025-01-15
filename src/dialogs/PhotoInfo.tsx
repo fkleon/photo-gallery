@@ -156,6 +156,16 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
                                     ])}
                                 </StyledList>
                             </>)}
+                            {file.imageinfo?.fooocus && (<>
+                                <Typography textAlign="center" variant='h6'>Fooocus Metadata</Typography>
+                                <Divider />
+                                <StyledList>
+                                    {Object.entries(file.imageinfo.fooocus).map(([key, value]) => [
+                                        (<dt key={key}>{key}</dt>),
+                                        (<dd key={key+"-val"}>{String(value)}</dd>)
+                                    ])}
+                                </StyledList>
+                            </>)}
                             <Typography textAlign="center" variant='h6'>File Stat</Typography>
                             <Divider />
                             <StyledList>
