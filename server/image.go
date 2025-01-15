@@ -13,9 +13,10 @@ import (
 	// REMINDER: check for updates
 	"gitlab.com/golang-utils/image2/jpeg"
 
-	_ "github.com/adrium/goheif"
 	"github.com/disintegration/imaging"
+	_ "github.com/jdeng/goheif"
 	"github.com/mholt/goexif2/exif"
+	pngembed "github.com/sabhiram/png-embed"
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/vp8"
