@@ -41,12 +41,13 @@ type FileExtendedInfo struct {
 		ModTime   time.Time `json:"modtime"`   // modification time
 	} `json:"filestat"`
 	ImageInfo struct {
-		Format   string      `json:"format"`   // Image Format
-		Width    int         `json:"width"`    // Image Width
-		Height   int         `json:"height"`   // Image Height
-		Date     time.Time   `json:"date"`     // Image Date taken
-		Location GPSLocation `json:"location"` // Image location
-		Exif     *exif.Exif  `json:"exif"`     // Image EXIF data
+		Format   string       `json:"format"`   // Image Format
+		Width    int          `json:"width"`    // Image Width
+		Height   int          `json:"height"`   // Image Height
+		Date     time.Time    `json:"date"`     // Image Date taken
+		Location GPSLocation  `json:"location"` // Image location
+		Exif     *exif.Exif   `json:"exif"`     // Image EXIF data
+		Fooocus  *FooocusMeta `json:"fooocus"`  // Image Fooocus metadata
 	} `json:"imageinfo"`
 }
 
@@ -115,7 +116,7 @@ func (file *File) ExtractInfo() error {
 
 	switch file.Type {
 	case "image":
-		_, cfg, exifInfo, _ := ExtractImageInfoOpened(f)
+		_, cfg, exifInfo, _, _ := ExtractImageInfoOpened(f, file.MIME)
 		file.Width = cfg.Width
 		file.Height = cfg.Height
 
@@ -176,7 +177,7 @@ func (file *File) ExtractExtendedInfo() (info FileExtendedInfo, err error) {
 		ii.Date = file.Date
 		ii.Location = file.Location
 		// Extract info
-		ii.Format, _, ii.Exif, err = ExtractImageInfo(file.Path)
+		ii.Format, _, ii.Exif, ii.Fooocus, err = ExtractImageInfo(file)
 		if err != nil {
 			log.Println("error while extracting image info", err)
 		}
@@ -202,7 +203,7 @@ func (file *File) Convert(w io.Writer) error {
 	switch file.Type {
 	case "image":
 		// Check for EXIF
-		_, _, exifInfo, _ := ExtractImageInfo(file.Path)
+		_, _, exifInfo, _, _ := ExtractImageInfo(file)
 		var exifData []byte
 		if exifInfo != nil {
 			exifData = exifInfo.Raw

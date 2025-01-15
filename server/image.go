@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"image"
 	_ "image/gif"
@@ -138,18 +139,18 @@ func DecodeImage(filepath string, orientation Orientation) (image.Image, error) 
 	return img, nil
 }
 
-func ExtractImageInfo(filepath string) (string, image.Config, *exif.Exif, error) {
+func ExtractImageInfo(file *File) (string, image.Config, *exif.Exif, *FooocusMeta, error) {
 	// Open input file image
-	fin, err := os.Open(filepath)
+	fin, err := os.Open(file.Path)
 	if err != nil {
-		return "", image.Config{}, nil, err
+		return "", image.Config{}, nil, nil, err
 	}
 	defer fin.Close()
 
-	return ExtractImageInfoOpened(fin)
+	return ExtractImageInfoOpened(fin, file.MIME)
 }
 
-func ExtractImageInfoOpened(fin *os.File) (format string, config image.Config, exifData *exif.Exif, err error) {
+func ExtractImageInfoOpened(fin *os.File, MIME string) (format string, config image.Config, exifData *exif.Exif, fooocusData *FooocusMeta, err error) {
 	// Rewind to the start
 	fin.Seek(0, io.SeekStart)
 
@@ -163,9 +164,52 @@ func ExtractImageInfoOpened(fin *os.File) (format string, config image.Config, e
 	fin.Seek(0, io.SeekStart)
 
 	// Extract EXIF
-	exifData, err = exif.Decode(fin)
+	exifData, exifErr := exif.Decode(fin)
+	if exifErr != nil {
+		fmt.Printf("Failed to extract EXIF: %s\n", exifErr.Error())
+	}
+
+	if MIME == "image/png" {
+		// Extract PNG textual info
+		fooocusData, fooocusErr := ExtractPNGImageInfoOpened(fin)
+		if fooocusErr != nil {
+			fmt.Printf("Failed to extract PNG text: %s\n", fooocusErr.Error())
+		}
+		return format, config, exifData, fooocusData, err
+	}
+
+	return
+}
+
+func ExtractPNGImageInfoOpened(fin *os.File) (metadata *FooocusMeta, err error) {
+
+	// Rewind to the start
+	fin.Seek(0, io.SeekStart)
+
+	// Extract PNG tEXt
+	data, err := os.ReadFile(fin.Name())
 	if err != nil {
-		return
+		return nil, err
+	}
+
+	textData, err := pngembed.Extract(data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to extract Fooocus metadata from PNG tEXt: %w", err)
+	}
+
+	// fooocus or a1111
+	if val, ok := textData["fooocus_scheme"]; ok {
+		scheme := string(val)
+
+		if scheme != "fooocus" {
+			return nil, fmt.Errorf("unsupported Fooocus metadata scheme: %s", scheme)
+		}
+
+		metadata = &FooocusMeta{}
+		err = json.Unmarshal(textData["parameters"], metadata)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read Fooocus parameters: %w", err)
+		}
 	}
 
 	return
