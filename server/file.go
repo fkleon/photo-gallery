@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"image"
 	"io"
 	"log"
@@ -233,15 +234,13 @@ func (file File) CreateThumbnail(thumbpath string, w io.Writer) (err error) {
 		img, err = DecodeImage(file.Path, file.Orientation)
 	case "video":
 		// Get a frame from the video
-		img, err = GetVideoFrame(file.Path)
+		//img, err = GetVideoFrame(file.Path)
+		img, err = nil, fmt.Errorf("unsupported file type: %s", file.Type)
 	}
 
 	// Error decoding image from source
-	if img == nil {
-		return errors.New("invalid image")
-	}
 	if err != nil {
-		return
+		return fmt.Errorf("invalid image: %w", err)
 	}
 
 	// Ensure the directories exist
