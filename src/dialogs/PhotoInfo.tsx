@@ -17,6 +17,8 @@ import Divider from "@mui/material/Divider";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Grid from "@mui/material/Grid";
 import IconButton from '@mui/material/IconButton';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DoneIcon from '@mui/icons-material/Done';
 import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Typography from "@mui/material/Typography";
@@ -53,6 +55,7 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
     const [ index, setIndex ] = useState(selected);
+    const [ copied, setCopied ] = useState(false);
     const photo = photos[index];
     const { data, isFetching } = useGetPhotoInfoQuery(photo, {skip: photo === undefined});
 
@@ -157,7 +160,18 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
                                 </StyledList>
                             </>)}
                             {file.imageinfo?.fooocus && (<>
-                                <Typography textAlign="center" variant='h6'>Fooocus Metadata</Typography>
+                                <Typography textAlign="center" variant='h6'>
+                                    Fooocus Metadata
+                                    <IconButton onClick={
+                                        () => {
+                                            navigator.clipboard.writeText(JSON.stringify(file.imageinfo?.fooocus))
+                                            setCopied(true);
+                                        }
+                                    }>
+                                        {copied ? <DoneIcon /> : <ContentCopyIcon />}
+                                    </IconButton>
+                                </Typography>
+
                                 <Divider />
                                 <StyledList>
                                     {Object.entries(file.imageinfo.fooocus).map(([key, value]) => [
