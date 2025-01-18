@@ -124,7 +124,7 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
             <DialogContent dividers>
                 <Grid container spacing={2}>
                     <Grid item xs={4}>
-                        <img src={urls.thumb(photo)} alt={photo.title} style={{ width: "100%", height: "200px", objectFit: "cover" }} />
+                        <img src={urls.thumb(photo)} alt={photo.title} style={{ width: "100%", height: "200px", objectFit: "scale-down" }} />
                     </Grid>
                     <Grid item xs={8}>
                         {photo.location.present && <Suspense><Map height="200px" mark={photo.location} /></Suspense>}
