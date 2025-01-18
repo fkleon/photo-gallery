@@ -103,7 +103,7 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
             open={open}
             onKeyDown={onKeyDown}
             fullScreen={fullScreen}
-            maxWidth="md"
+            maxWidth="lg"
             fullWidth
         >
             <DialogTitle id="photo-info-title">
@@ -128,68 +128,71 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
                     </Grid>
                     <Grid item xs={8}>
                         {photo.location.present && <Suspense><Map height="200px" mark={photo.location} /></Suspense>}
+
+                        {data.map((file: FileExtendedInfo) => (
+                            <Accordion key={file.filestat.name} defaultExpanded>
+                                <AccordionSummary expandIcon={<ExpandMoreIcon />}>
+                                    <Typography>{file.filestat.name}</Typography>
+                                </AccordionSummary>
+                                <AccordionDetails>
+                                    <Typography textAlign="center" variant='h6'>Info</Typography>
+                                    <Divider />
+                                    <StyledList>
+                                        <dt>Type</dt><dd>{file.type}</dd>
+                                        <dt>MIME</dt><dd>{file.mime}</dd>
+                                        {file.imageinfo && (<>
+                                            <dt>Format</dt><dd>{file.imageinfo.format.toUpperCase()}</dd>
+                                            <dt>Width</dt><dd>{file.imageinfo.width}px</dd>
+                                            <dt>Height</dt><dd>{file.imageinfo.height}px</dd>
+                                            <dt>Date taken</dt><dd>{file.imageinfo.date}</dd>
+                                        </>)}
+                                    </StyledList>
+                                    {file.imageinfo?.exif && (<>
+                                        <Typography textAlign="center" variant='h6'>Metadata</Typography>
+                                        <Divider />
+                                        <StyledList>
+                                            {Object.entries(file.imageinfo.exif).map(([key, value]) => [
+                                                (<dt key={key}>{key}</dt>),
+                                                (<dd key={key + "-val"}>{String(value)}</dd>)
+                                            ])}
+                                        </StyledList>
+                                    </>)}
+                                    {file.imageinfo?.fooocus && (<>
+                                        <Typography textAlign="center" variant='h6'>
+                                            Fooocus Metadata
+                                            <IconButton
+                                                title={copied ? "Copied!" : "Copy to clipboard"}
+                                                onClick={
+                                                    () => {
+                                                        navigator.clipboard.writeText(JSON.stringify(file.imageinfo?.fooocus))
+                                                        setCopied(true);
+                                                    }
+                                                }>
+                                                {copied ? <DoneIcon /> : <ContentCopyIcon />}
+                                            </IconButton>
+                                        </Typography>
+
+                                        <Divider />
+                                        <StyledList>
+                                            {Object.entries(file.imageinfo.fooocus).map(([key, value]) => [
+                                                (<dt key={key}>{key}</dt>),
+                                                (<dd key={key + "-val"}>{String(value)}</dd>)
+                                            ])}
+                                        </StyledList>
+                                    </>)}
+                                    <Typography textAlign="center" variant='h6'>File Stat</Typography>
+                                    <Divider />
+                                    <StyledList>
+                                        <dt>Name</dt><dd>{file.filestat.name}</dd>
+                                        <dt>Size</dt><dd>{file.filestat.sizehuman} ({file.filestat.size.toLocaleString()} bytes)</dd>
+                                        <dt>Modification Time</dt><dd>{new Date(file.filestat.modtime).toLocaleString()}</dd>
+                                        <dt>Permissions</dt><dd>{file.filestat.perm}</dd>
+                                    </StyledList>
+                                </AccordionDetails>
+                            </Accordion>
+                        ))}
                     </Grid>
                 </Grid>
-                {data.map((file: any) => (
-                    <Accordion key={file.filestat.name} defaultExpanded>
-                        <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-                            <Typography>{file.filestat.name}</Typography>
-                        </AccordionSummary>
-                        <AccordionDetails>
-                            <Typography textAlign="center" variant='h6'>Info</Typography>
-                            <Divider />
-                            <StyledList>
-                                <dt>Type</dt><dd>{file.type}</dd>
-                                <dt>MIME</dt><dd>{file.mime}</dd>
-                                {file.imageinfo && (<>
-                                    <dt>Format</dt><dd>{file.imageinfo.format.toUpperCase()}</dd>
-                                    <dt>Width</dt><dd>{file.imageinfo.width}px</dd>
-                                    <dt>Height</dt><dd>{file.imageinfo.height}px</dd>
-                                    <dt>Date taken</dt><dd>{file.imageinfo.date}</dd>
-                                </>)}
-                            </StyledList>
-                            {file.imageinfo?.exif && (<>
-                                <Typography textAlign="center" variant='h6'>Metadata</Typography>
-                                <Divider />
-                                <StyledList>
-                                    {Object.entries(file.imageinfo.exif).map(([key, value]) => [
-                                        (<dt key={key}>{key}</dt>),
-                                        (<dd key={key+"-val"}>{String(value)}</dd>)
-                                    ])}
-                                </StyledList>
-                            </>)}
-                            {file.imageinfo?.fooocus && (<>
-                                <Typography textAlign="center" variant='h6'>
-                                    Fooocus Metadata
-                                    <IconButton onClick={
-                                        () => {
-                                            navigator.clipboard.writeText(JSON.stringify(file.imageinfo?.fooocus))
-                                            setCopied(true);
-                                        }
-                                    }>
-                                        {copied ? <DoneIcon /> : <ContentCopyIcon />}
-                                    </IconButton>
-                                </Typography>
-
-                                <Divider />
-                                <StyledList>
-                                    {Object.entries(file.imageinfo.fooocus).map(([key, value]) => [
-                                        (<dt key={key}>{key}</dt>),
-                                        (<dd key={key+"-val"}>{String(value)}</dd>)
-                                    ])}
-                                </StyledList>
-                            </>)}
-                            <Typography textAlign="center" variant='h6'>File Stat</Typography>
-                            <Divider />
-                            <StyledList>
-                                <dt>Name</dt><dd>{file.filestat.name}</dd>
-                                <dt>Size</dt><dd>{file.filestat.sizehuman} ({file.filestat.size.toLocaleString()} bytes)</dd>
-                                <dt>Modification Time</dt><dd>{new Date(file.filestat.modtime).toLocaleString()}</dd>
-                                <dt>Permissions</dt><dd>{file.filestat.perm}</dd>
-                            </StyledList>
-                        </AccordionDetails>
-                    </Accordion>
-                ))}
 
             </DialogContent>
         </Dialog>
