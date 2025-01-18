@@ -6,13 +6,11 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import Box from "@mui/material/Box";
-import Button from '@mui/material/Button';
 import CircularProgress from "@mui/material/CircularProgress";
 import CloseIcon from '@mui/icons-material/Close';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
 import Divider from "@mui/material/Divider";
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Grid from "@mui/material/Grid";
@@ -193,11 +191,6 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
                 ))}
 
             </DialogContent>
-            <DialogActions>
-                <Button autoFocus onClick={handleClose}>
-                    Close
-                </Button>
-            </DialogActions>
         </Dialog>
     );
 }
