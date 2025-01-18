@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"log"
 	"math"
 	"os"
@@ -83,9 +82,18 @@ func (c *Collection) Info() CollectionInfo {
 // For that use Album.GetPhotos()
 func (c *Collection) GetAlbums() ([]*Album, error) {
 	albums := make([]*Album, 0)
-	files, err := ioutil.ReadDir(c.PhotosPath)
+	entries, err := os.ReadDir(c.PhotosPath)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read photos path at %s: %w", c.PhotosPath, err)
+	}
+
+	files := make([]fs.FileInfo, 0, len(entries))
+	for _, entry := range entries {
+		info, err := entry.Info()
+		if err != nil {
+			return nil, fmt.Errorf("failed to read file info: %w", err)
+		}
+		files = append(files, info)
 	}
 
 	for _, file := range files {
