@@ -50,6 +50,13 @@ const StyledList = styled("dl")({
     }
 });
 
+const SummaryStyledList = styled("dl")({
+    width: "100%",
+    '& dt': {
+        fontWeight: "bold"
+    },
+});
+
 const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }) => {
     const theme = useTheme();
     const fullScreen = useMediaQuery(theme.breakpoints.down('sm'));
@@ -63,6 +70,16 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
     // Do not render if is not valid
     if(photo === undefined || data === undefined)
         return null;
+
+    // Main file is the only file, or the first image file.
+    const mainFile = (
+        data.length < 1 ?
+        null : (
+            data.length > 1 ?
+            data.find(d => d.type === "image") :
+            data[0]
+        )
+    );
 
     const hasBefore = index > 0;
     const hasNext = index < photos.length - 1;
@@ -125,6 +142,13 @@ const PhotoInfoDialog: FC<InfoPanelProps> = ({ open, photos, selected, onClose }
                 <Grid container spacing={2}>
                     <Grid item xs={4}>
                         <img src={urls.thumb(photo)} alt={photo.title} style={{ width: "100%", height: "200px", objectFit: "scale-down" }} />
+                        {mainFile?.imageinfo?.fooocus && (<>
+                            <SummaryStyledList>
+                                <dt>Model</dt><dd>{mainFile?.imageinfo?.fooocus.base_model}</dd>
+                                <dt>Positive prompt</dt><dd>{mainFile?.imageinfo?.fooocus.prompt || "—"}</dd>
+                                <dt>Negative prompt</dt><dd>{mainFile?.imageinfo?.fooocus.negative_prompt || "—"}</dd>
+                            </SummaryStyledList>
+                        </>)}
                     </Grid>
                     <Grid item xs={8}>
                         {photo.location.present && <Suspense><Map height="200px" mark={photo.location} /></Suspense>}
