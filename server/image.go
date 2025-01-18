@@ -14,7 +14,7 @@ import (
 	"gitlab.com/golang-utils/image2/jpeg"
 
 	"github.com/disintegration/imaging"
-	_ "github.com/jdeng/goheif"
+	goheif "github.com/jdeng/goheif"
 	"github.com/mholt/goexif2/exif"
 	pngembed "github.com/sabhiram/png-embed"
 	_ "golang.org/x/image/bmp"
@@ -23,6 +23,10 @@ import (
 	_ "golang.org/x/image/vp8l"
 	_ "golang.org/x/image/webp"
 )
+
+func init() {
+	goheif.SafeEncoding = true
+}
 
 // Skip Writer for exif writing
 type writerSkipper struct {
