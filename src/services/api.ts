@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { CollectionType, PseudoAlbumType, AlbumType, PhotoType } from "../types";
+import { CollectionType, PseudoAlbumType, AlbumType, PhotoType, FileExtendedInfo } from "../types";
 import { changeFavorite } from "./app";
 
 export interface QueryAlbums {
@@ -67,7 +67,7 @@ export const api = createApi({
             }),
             invalidatesTags: [ 'Pseudo', 'Albums'],
         }),
-        getPhotoInfo: builder.query<any[], PhotoType>({
+        getPhotoInfo: builder.query<FileExtendedInfo[], PhotoType>({
             query: ({collection, album, id }) => `/collections/${collection}/albums/${album}/photos/${id}/info`,
         }),
         savePhotoToPseudo: builder.mutation<void, QuerySaveFavorite>({

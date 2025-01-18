@@ -21,7 +21,7 @@ import NavigateBeforeIcon from '@mui/icons-material/NavigateBefore';
 import NavigateNextIcon from '@mui/icons-material/NavigateNext';
 import Typography from "@mui/material/Typography";
 
-import { PhotoType, urls } from "../types";
+import { FileExtendedInfo, PhotoType, urls } from "../types";
 import { useGetPhotoInfoQuery } from "../services/api";
 
 const Map = lazy(() => import("../Map"));
