@@ -4,6 +4,8 @@ import (
 	"os"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 func TestCreateThumbnails(t *testing.T) {
@@ -11,6 +13,9 @@ func TestCreateThumbnails(t *testing.T) {
 		Name:       "Photos",
 		PhotosPath: "tests/",
 		ThumbsPath: "tests/.thumbs/"}
+
+	err := collection.cache.Init(collection, true)
+	require.NoError(t, err)
 
 	collection.CreateThumbnails()
 	// Wait to thumbnails to finish
@@ -23,13 +28,17 @@ func TestBenchmarkThumbnails(t *testing.T) {
 		PhotosPath: "tests/",
 		ThumbsPath: "tests/.thumbs/"}
 
-	collection.cache.Init(collection, false)
+	err := collection.cache.Init(collection, true)
+	require.NoError(t, err)
 
 	var sum time.Duration = 0
 	var bytes = 0
-	albums, _ := collection.GetAlbums()
+	albums, err := collection.GetAlbums()
+	require.NoError(t, err)
+
 	for _, album := range albums {
-		album.GetPhotos(collection, false, []PseudoAlbumEntry{}...)
+		err := album.GetPhotos(collection, false, []PseudoAlbumEntry{}...)
+		require.NoError(t, err)
 
 		start := time.Now()
 		for _, photo := range album.photosMap {
@@ -48,12 +57,16 @@ func TestBenchmarkThumbnailAlbum(t *testing.T) {
 		PhotosPath: "tests/",
 		ThumbsPath: "tests/.thumbs/"}
 
-	collection.cache.Init(collection, false)
+	err := collection.cache.Init(collection, true)
+	require.NoError(t, err)
 
 	var sum time.Duration = 0
 	var bytes = 0
-	album, _ := collection.GetAlbum("Album 1")
-	album.GetPhotos(collection, false, []PseudoAlbumEntry{}...)
+	album, err := collection.GetAlbum("Album 1")
+	require.NoError(t, err)
+
+	err = album.GetPhotos(collection, false, []PseudoAlbumEntry{}...)
+	require.NoError(t, err)
 
 	start := time.Now()
 	for _, photo := range album.photosMap {

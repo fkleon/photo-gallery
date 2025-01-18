@@ -11,6 +11,7 @@ require (
 	github.com/mholt/goexif2 v0.0.0-20230302025153-4d89d35092b2
 	github.com/sabhiram/png-embed v0.0.0-20180421025336-149afe9a3ccb
 	github.com/shirou/gopsutil v3.21.11+incompatible
+	github.com/stretchr/testify v1.10.0
 	github.com/timshannon/bolthold v0.0.0-20240314194003-30aac6950928
 	github.com/zulucmd/zflag v1.1.2
 	gitlab.com/golang-utils/image2 v0.0.1
@@ -21,10 +22,12 @@ require (
 )
 
 require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/labstack/gommon v0.4.2 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sabhiram/pngr v0.0.0-20180419043407-2df49b015d4b // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
@@ -33,4 +36,5 @@ require (
 	golang.org/x/sys v0.29.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

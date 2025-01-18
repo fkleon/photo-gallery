@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"github.com/timshannon/bolthold"
 )
 
@@ -14,7 +16,9 @@ func TestPrintPhotoInfoEntries(t *testing.T) {
 		ThumbsPath: "/tmp",
 	}
 
-	collection.cache.Init(&collection, false)
+	err := collection.cache.Init(&collection, false)
+	require.NoError(t, err)
+
 	defer collection.cache.End()
 
 	count := 0
@@ -39,4 +43,6 @@ func TestPrintPhotoInfoEntries(t *testing.T) {
 		fmt.Println()
 		return nil
 	})
+
+	assert.Equal(t, 1, count)
 }
