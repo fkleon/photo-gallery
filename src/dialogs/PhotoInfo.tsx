@@ -39,6 +39,7 @@ const StyledList = styled("dl")({
         width: "50%",
         display: "inline-block",
         textAlign: "right",
+        fontWeight: "bold",
         padding: 3
     },
     '& dd': {
