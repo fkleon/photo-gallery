@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"image"
 	_ "image/gif"
@@ -23,6 +22,7 @@ import (
 	_ "golang.org/x/image/vp8"
 	_ "golang.org/x/image/vp8l"
 	_ "golang.org/x/image/webp"
+	"golang.org/x/text/encoding/charmap"
 )
 
 func init() {
@@ -163,56 +163,68 @@ func ExtractImageInfoOpened(fin *os.File, MIME string) (format string, config im
 	// Rewind to the start
 	fin.Seek(0, io.SeekStart)
 
-	// Extract EXIF
+	// Extract EXIF data
 	exifData, exifErr := exif.Decode(fin)
 	if exifErr != nil {
 		fmt.Printf("Failed to extract EXIF: %s\n", exifErr.Error())
 	}
 
+	// Rewind to the start
+	fin.Seek(0, io.SeekStart)
+
+	// Extract PNG tEXt data
+	pngData := make(map[string]string)
+
 	if MIME == "image/png" {
-		// Extract PNG textual info
-		fooocusData, fooocusErr := ExtractPNGImageInfoOpened(fin)
-		if fooocusErr != nil {
-			fmt.Printf("Failed to extract PNG text: %s\n", fooocusErr.Error())
+		data, pngErr := ExtractPNGTextChunksOpened(fin)
+		if pngErr != nil {
+			return
 		}
-		return format, config, exifData, fooocusData, err
+		pngData = data
+	}
+
+	// Extract Fooocus metadata
+	fooocusData, fooocusErr := ExtractFoocusMetadata(exifData, pngData)
+	if fooocusErr != nil {
+		fmt.Printf("Failed to extract Fooocus metadata: %s\n", fooocusErr.Error())
 	}
 
 	return
 }
 
-func ExtractPNGImageInfoOpened(fin *os.File) (metadata *FooocusMeta, err error) {
+func ExtractPNGTextChunksOpened(fin *os.File) (map[string]string, error) {
 
-	// Rewind to the start
-	fin.Seek(0, io.SeekStart)
-
-	// Extract PNG tEXt
 	data, err := os.ReadFile(fin.Name())
 	if err != nil {
 		return nil, err
 	}
 
+	// Extract PNG tEXt chunks
 	textData, err := pngembed.Extract(data)
 	if err != nil {
-		return nil, fmt.Errorf("failed to extract Fooocus metadata from PNG tEXt: %w", err)
+		return nil, fmt.Errorf("failed to extract PNG tEXt chunks: %w", err)
 	}
 
-	// fooocus or a1111
-	if val, ok := textData["fooocus_scheme"]; ok {
-		scheme := string(val)
+	textDataDecoded := make(map[string]string)
 
-		if scheme != "fooocus" {
-			return nil, fmt.Errorf("unsupported Fooocus metadata scheme: %s", scheme)
-		}
-
-		metadata = &FooocusMeta{}
-		err = json.Unmarshal(textData["parameters"], metadata)
+	// Decode text with ISO-8859-1 as per PNG spec
+	decoder := charmap.ISO8859_1.NewDecoder()
+	for k, v := range textData {
+		kd, err := decoder.String(string(k))
 		if err != nil {
-			return nil, fmt.Errorf("failed to read Fooocus parameters: %w", err)
+			fmt.Printf("failed to decode key '%s': %s", k, err)
+			continue
 		}
+		vd, err := decoder.String(string(v))
+		if err != nil {
+			fmt.Printf("failed to decode value '%s': %s", k, err)
+			continue
+		}
+		textDataDecoded[kd] = vd
+		textDataDecoded[k] = string(v)
 	}
 
-	return
+	return textDataDecoded, nil
 }
 
 func CreateThumbnailFromImage(img image.Image, thumbpath string, w io.Writer) error {
