@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/dustin/go-humanize"
+	"github.com/fkleon/fooocus-metadata"
 	"github.com/mholt/goexif2/exif"
 	"github.com/mholt/goexif2/tiff"
 )
@@ -41,13 +42,13 @@ type FileExtendedInfo struct {
 		ModTime   time.Time `json:"modtime"`   // modification time
 	} `json:"filestat"`
 	ImageInfo struct {
-		Format   string       `json:"format"`   // Image Format
-		Width    int          `json:"width"`    // Image Width
-		Height   int          `json:"height"`   // Image Height
-		Date     time.Time    `json:"date"`     // Image Date taken
-		Location GPSLocation  `json:"location"` // Image location
-		Exif     *exif.Exif   `json:"exif"`     // Image EXIF data
-		Fooocus  *FooocusMeta `json:"fooocus"`  // Image Fooocus metadata
+		Format   string            `json:"format"`   // Image Format
+		Width    int               `json:"width"`    // Image Width
+		Height   int               `json:"height"`   // Image Height
+		Date     time.Time         `json:"date"`     // Image Date taken
+		Location GPSLocation       `json:"location"` // Image location
+		Exif     *exif.Exif        `json:"exif"`     // Image EXIF data
+		Fooocus  *fooocus.Metadata `json:"fooocus"`  // Image Fooocus metadata
 	} `json:"imageinfo"`
 }
 
@@ -116,7 +117,7 @@ func (file *File) ExtractInfo() error {
 
 	switch file.Type {
 	case "image":
-		_, cfg, exifInfo, _, _ := ExtractImageInfoOpened(f, file.MIME)
+		_, cfg, exifInfo, _, _ := ExtractImageInfoOpened(f)
 		file.Width = cfg.Width
 		file.Height = cfg.Height
 

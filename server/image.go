@@ -14,15 +14,14 @@ import (
 	"gitlab.com/golang-utils/image2/jpeg"
 
 	"github.com/disintegration/imaging"
+	"github.com/fkleon/fooocus-metadata"
 	goheif "github.com/jdeng/goheif"
 	"github.com/mholt/goexif2/exif"
-	pngembed "github.com/sabhiram/png-embed"
 	_ "golang.org/x/image/bmp"
 	_ "golang.org/x/image/tiff"
 	_ "golang.org/x/image/vp8"
 	_ "golang.org/x/image/vp8l"
 	_ "golang.org/x/image/webp"
-	"golang.org/x/text/encoding/charmap"
 )
 
 func init() {
@@ -139,7 +138,7 @@ func DecodeImage(filepath string, orientation Orientation) (image.Image, error) 
 	return img, nil
 }
 
-func ExtractImageInfo(file *File) (string, image.Config, *exif.Exif, *FooocusMeta, error) {
+func ExtractImageInfo(file *File) (string, image.Config, *exif.Exif, *fooocus.Metadata, error) {
 	// Open input file image
 	fin, err := os.Open(file.Path)
 	if err != nil {
@@ -147,10 +146,10 @@ func ExtractImageInfo(file *File) (string, image.Config, *exif.Exif, *FooocusMet
 	}
 	defer fin.Close()
 
-	return ExtractImageInfoOpened(fin, file.MIME)
+	return ExtractImageInfoOpened(fin)
 }
 
-func ExtractImageInfoOpened(fin *os.File, MIME string) (format string, config image.Config, exifData *exif.Exif, fooocusData *FooocusMeta, err error) {
+func ExtractImageInfoOpened(fin *os.File) (format string, config image.Config, exifData *exif.Exif, fooocusData *fooocus.Metadata, err error) {
 	// Rewind to the start
 	fin.Seek(0, io.SeekStart)
 
@@ -172,59 +171,16 @@ func ExtractImageInfoOpened(fin *os.File, MIME string) (format string, config im
 	// Rewind to the start
 	fin.Seek(0, io.SeekStart)
 
-	// Extract PNG tEXt data
-	pngData := make(map[string]string)
-
-	if MIME == "image/png" {
-		data, pngErr := ExtractPNGTextChunksOpened(fin)
-		if pngErr != nil {
-			return
-		}
-		pngData = data
-	}
-
 	// Extract Fooocus metadata
-	fooocusData, fooocusErr := ExtractFoocusMetadata(exifData, pngData)
+	fooocusImage, fooocusErr := fooocus.NewImageInfo(fin.Name())
+
+	fooocusData = fooocusImage.FooocusMetadata
+
 	if fooocusErr != nil {
 		fmt.Printf("Failed to extract Fooocus metadata: %s\n", fooocusErr.Error())
 	}
 
 	return
-}
-
-func ExtractPNGTextChunksOpened(fin *os.File) (map[string]string, error) {
-
-	data, err := os.ReadFile(fin.Name())
-	if err != nil {
-		return nil, err
-	}
-
-	// Extract PNG tEXt chunks
-	textData, err := pngembed.Extract(data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to extract PNG tEXt chunks: %w", err)
-	}
-
-	textDataDecoded := make(map[string]string)
-
-	// Decode text with ISO-8859-1 as per PNG spec
-	decoder := charmap.ISO8859_1.NewDecoder()
-	for k, v := range textData {
-		kd, err := decoder.String(string(k))
-		if err != nil {
-			fmt.Printf("failed to decode key '%s': %s", k, err)
-			continue
-		}
-		vd, err := decoder.String(string(v))
-		if err != nil {
-			fmt.Printf("failed to decode value '%s': %s", k, err)
-			continue
-		}
-		textDataDecoded[kd] = vd
-		textDataDecoded[k] = string(v)
-	}
-
-	return textDataDecoded, nil
 }
 
 func CreateThumbnailFromImage(img image.Image, thumbpath string, w io.Writer) error {
